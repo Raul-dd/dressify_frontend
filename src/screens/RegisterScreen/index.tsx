@@ -17,19 +17,28 @@ const RegisterScreen = ({ navigation }: any) => {
 
   const handleRegister = async () => {
     try {
-      await axios.post(`https://api.dressify.com/api/accounts`, {
+      await axios.post(`http://192.168.100.29:8000/api/accounts`, {
         name,
         email,
         password,
+        password_confirmation: password, // 👈 necesario
         role: 'user'
       });
 
       Alert.alert('¡Cuenta creada!', 'Ahora puedes iniciar sesión');
-      navigation.navigate('Login');
-    } catch (error: any) {
-      console.error(error.response?.data || error);
+    navigation.navigate('Login');
+  } catch (error: any) {
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors;
+      const firstKey = Object.keys(errors)[0];
+      const firstMessage = errors[firstKey][0];
+      Alert.alert('Error de validación', firstMessage);
+    } else if (error.response?.data?.message) {
+      Alert.alert('Error', error.response.data.message);
+    } else {
       Alert.alert('Error', 'No se pudo registrar');
     }
+  }
   };
 
   return (
